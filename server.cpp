@@ -15,6 +15,7 @@
 #define PORT 8081
 
 char* parse_method(char line[], const char symbol[]);
+char* parse(char line[], const char symbol[]);
 int send_message(int fd, char image_path[], char head[]);
 
 
@@ -74,7 +75,9 @@ int main(int argc, char const *argv[])
             valread = read(new_socket , buffer, 30000);
 
             printf("\n buffer message: %s \n ", buffer);
-            char *parse_string_method = parse_method(buffer, " ");  //Try to get the path which the client ask for
+            char *parse_string = parse(buffer, " ");  //Try to get the path which the client ask for
+		    printf("Client ask for path: %s\n", parse_string);
+            char *parse_string_method = parse_method(buffer, " ");  //Try to get the method which the client ask for
             printf("Client method: %s\n", parse_string_method);
 
 
@@ -83,10 +86,15 @@ int main(int argc, char const *argv[])
 
             if(parse_string_method[0] == 'G' && parse_string_method[1] == 'E' && parse_string_method[2] == 'T'){
                 // GET
-                char path_head[500] = ".";
-                strcat(path_head, "/index.html");
-                strcat(copy_head, "Content-Type: text/html\r\n\r\n");
-                send_message(new_socket, path_head, copy_head);               
+                if(strcmp(parse_string, "/index.html") == 0) { // compare if path exists
+                    char path_head[500] = ".";
+                    strcat(path_head, "/index.html");
+                    strcat(copy_head, "Content-Type: text/html\r\n\r\n");
+                    send_message(new_socket, path_head, copy_head);    
+                }
+                else {
+                    send_message(new_socket, "./error.html", copy_head);
+                }
             }
             else {
                 // OTHER METHODS
@@ -103,7 +111,6 @@ int main(int argc, char const *argv[])
     close(server_fd);
     return 0;
 }
-
 
 char* parse_method(char line[], const char symbol[])
 {
@@ -130,6 +137,31 @@ char* parse_method(char line[], const char symbol[])
    return message;
 }
 
+char* parse(char line[], const char symbol[])
+{
+    char *copy = (char *)malloc(strlen(line) + 1);
+    strcpy(copy, line);
+    
+    char *message;
+    char * token = strtok(copy, symbol);
+    int current = 0;
+
+    while( token != NULL ) {
+      
+      token = strtok(NULL, " ");
+      if(current == 0){
+          message = token;
+          if(message == NULL){
+              message = "";
+          }
+          return message;
+      }
+      current = current + 1;
+   }
+   free(token);
+   free(copy);
+   return message;
+}
 
 int send_message(int fd, char image_path[], char head[]){
    
