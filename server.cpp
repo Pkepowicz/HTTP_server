@@ -93,12 +93,12 @@ int main(int argc, char const *argv[])
                     send_message(new_socket, path_head, copy_head);    
                 }
                 else {
-                    send_message(new_socket, "./error.html", copy_head);
+                    send_message(new_socket, "/path_error.html", copy_head);
                 }
             }
             else {
                 // OTHER METHODS
-                send_message(new_socket, "./error.html", copy_head);
+                send_message(new_socket, "/error.html", copy_head);
             }
             close(new_socket);
             free(copy_head);  
